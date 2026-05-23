@@ -13,7 +13,7 @@ public class SpreadsheetService {
 
     private static final String[] HEADERS = {
         "ID", "Nome", "Categoria", "Descrição", "Condição",
-        "Data de Aquisição", "Valor (R$)", "Observações"
+        "Data de Aquisição", "Valor (R$)", "Observações", "Foto (caminho)"
     };
 
     public void exportToXlsx(List<Item> items, File file) throws IOException {
@@ -80,6 +80,7 @@ public class SpreadsheetService {
         row.createCell(5).setCellValue(item.getAcquisitionDate() != null ? item.getAcquisitionDate().toString() : "");
         row.createCell(6).setCellValue(item.getValue());
         row.createCell(7).setCellValue(nullSafe(item.getNotes()));
+        row.createCell(8).setCellValue(nullSafe(item.getImagePath()));
     }
 
     private Item parseRow(Row row) {
@@ -105,6 +106,7 @@ public class SpreadsheetService {
         }
 
         item.setNotes(getCellString(row, 7));
+        item.setImagePath(getCellString(row, 8));
         return item;
     }
 

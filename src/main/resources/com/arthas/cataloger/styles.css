@@ -129,3 +129,32 @@
     -fx-border-color: #3498db;
     -fx-border-width: 0 0 2 0;
 }
+
+/* --- Botão gráfico --- */
+.btn-chart {
+    -fx-background-color: #8e44ad;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-background-radius: 4;
+    -fx-padding: 5 12 5 12;
+}
+.btn-chart:hover  { -fx-background-color: #7d3c98; }
+.btn-chart:pressed{ -fx-background-color: #6c3483; }
+
+/* --- Botão backup --- */
+.btn-backup {
+    -fx-background-color: #d35400;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-background-radius: 4;
+    -fx-padding: 5 12 5 12;
+}
+.btn-backup:hover  { -fx-background-color: #ba4a00; }
+.btn-backup:pressed{ -fx-background-color: #a04000; }
+
+/* --- Totais na janela de gráfico --- */
+.chart-total {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}

@@ -12,6 +12,7 @@ public class Item {
     private LocalDate acquisitionDate;
     private double value;
     private String notes;
+    private String imagePath;
 
     public Item() {}
 
@@ -49,6 +50,9 @@ public class Item {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     @Override
     public String toString() {

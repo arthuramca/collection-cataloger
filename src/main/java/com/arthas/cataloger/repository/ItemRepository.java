@@ -24,6 +24,28 @@ public class ItemRepository {
         this.connection = connection;
     }
 
+    public List<String> findDistinctCategories() throws SQLException {
+        List<String> categories = new ArrayList<>();
+        String sql = "SELECT DISTINCT category FROM items WHERE category != '' ORDER BY category COLLATE NOCASE";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) categories.add(rs.getString(1));
+        }
+        return categories;
+    }
+
+    public List<Item> findByCategory(String category) throws SQLException {
+        List<Item> items = new ArrayList<>();
+        String sql = "SELECT * FROM items WHERE category = ? ORDER BY name COLLATE NOCASE";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, category);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) items.add(mapRow(rs));
+            }
+        }
+        return items;
+    }
+
     public List<Item> findAll() throws SQLException {
         List<Item> items = new ArrayList<>();
         String sql = "SELECT * FROM items ORDER BY name COLLATE NOCASE";
@@ -63,8 +85,8 @@ public class ItemRepository {
 
     private Item insert(Item item) throws SQLException {
         String sql = """
-                INSERT INTO items (name, category, description, condition, acquisition_date, value, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO items (name, category, description, condition, acquisition_date, value, notes, image_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bindParams(stmt, item);
@@ -82,12 +104,12 @@ public class ItemRepository {
         String sql = """
                 UPDATE items
                 SET name = ?, category = ?, description = ?, condition = ?,
-                    acquisition_date = ?, value = ?, notes = ?
+                    acquisition_date = ?, value = ?, notes = ?, image_path = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             bindParams(stmt, item);
-            stmt.setInt(8, item.getId());
+            stmt.setInt(9, item.getId());
             stmt.executeUpdate();
         }
         return item;
@@ -109,6 +131,7 @@ public class ItemRepository {
         stmt.setString(5, item.getAcquisitionDate() != null ? item.getAcquisitionDate().toString() : null);
         stmt.setDouble(6, item.getValue());
         stmt.setString(7, nullSafe(item.getNotes()));
+        stmt.setString(8, nullSafe(item.getImagePath()));
     }
 
     private Item mapRow(ResultSet rs) throws SQLException {
@@ -124,6 +147,7 @@ public class ItemRepository {
         }
         item.setValue(rs.getDouble("value"));
         item.setNotes(rs.getString("notes"));
+        item.setImagePath(rs.getString("image_path"));
         return item;
     }
 

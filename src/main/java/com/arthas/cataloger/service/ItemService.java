@@ -48,6 +48,22 @@ public class ItemService {
         }
     }
 
+    public List<String> getDistinctCategories() {
+        try {
+            return repository.findDistinctCategories();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar categorias", e);
+        }
+    }
+
+    public List<Item> getItemsByCategory(String category) {
+        try {
+            return repository.findByCategory(category);
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao filtrar por categoria: " + category, e);
+        }
+    }
+
     public void deleteItem(int id) {
         try {
             repository.delete(id);

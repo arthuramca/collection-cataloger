@@ -26,8 +26,16 @@ public class DatabaseManager {
             }
             connection = DriverManager.getConnection(DB_URL);
             initializeSchema(connection);
+            runMigrations(connection);
         }
         return connection;
+    }
+
+    private static void runMigrations(Connection conn) throws SQLException {
+        // Migration v2: adiciona coluna image_path — ignorado se já existir
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("ALTER TABLE items ADD COLUMN image_path TEXT DEFAULT ''");
+        } catch (SQLException ignored) {}
     }
 
     private static void initializeSchema(Connection conn) throws SQLException {

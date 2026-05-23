@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.arthas.cataloger.controller.ChartController"
+      spacing="10" styleClass="main-pane">
+
+    <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+    <!-- Totalizadores -->
+    <HBox spacing="30" alignment="CENTER">
+        <Label fx:id="totalItemsLabel" text="0 itens" styleClass="chart-total"/>
+        <Separator orientation="VERTICAL"/>
+        <Label fx:id="totalValueLabel"  text="Valor total: R$ 0,00" styleClass="chart-total"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Abas com os gráficos -->
+    <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+
+        <Tab text="Valor por Categoria">
+            <PieChart fx:id="valueChart"
+                      prefHeight="420"
+                      clockwise="true"
+                      startAngle="90"/>
+        </Tab>
+
+        <Tab text="Itens por Categoria">
+            <BarChart fx:id="countChart" prefHeight="420" animated="true">
+                <xAxis>
+                    <CategoryAxis label="Categoria"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis label="Quantidade" minorTickCount="1"/>
+                </yAxis>
+            </BarChart>
+        </Tab>
+
+    </TabPane>
+</VBox>
