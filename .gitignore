@@ -10,6 +10,7 @@ target/
 *.jar
 *.war
 *.ear
+dependency-reduced-pom.xml
 
 # Banco de dados SQLite local (gerado automaticamente na primeira execução)
 *.db
