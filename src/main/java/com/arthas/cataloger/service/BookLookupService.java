@@ -9,6 +9,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 
 public class BookLookupService {
@@ -72,6 +75,39 @@ public class BookLookupService {
 
         info.publishYear = getString(book, "publish_date");
         return info;
+    }
+
+    public String downloadCover(String isbn) throws Exception {
+        String cleanIsbn = isbn.replaceAll("[^0-9X]", "");
+        if (cleanIsbn.length() != 10 && cleanIsbn.length() != 13) {
+            throw new Exception("ISBN inválido para baixar capa.");
+        }
+
+        String url = "https://covers.openlibrary.org/b/isbn/" + cleanIsbn + "-L.jpg";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(20))
+                .header("User-Agent", "Mozilla/5.0")
+                .GET()
+                .build();
+
+        HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() != 200) {
+            throw new Exception("Capa não encontrada (HTTP " + response.statusCode() + ").");
+        }
+
+        byte[] bytes = response.body();
+        // Open Library retorna GIF de 1x1 pixel quando a capa não existe
+        if (bytes.length < 2000) {
+            throw new Exception("Capa não disponível para este ISBN na Open Library.");
+        }
+
+        Path coversDir = Paths.get(System.getProperty("user.home"), "collection-cataloger", "covers");
+        Files.createDirectories(coversDir);
+        Path coverFile = coversDir.resolve(cleanIsbn + ".jpg");
+        Files.write(coverFile, bytes);
+
+        return coverFile.toAbsolutePath().toString();
     }
 
     private String getString(JsonObject obj, String key) {

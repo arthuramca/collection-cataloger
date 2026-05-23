@@ -94,16 +94,26 @@ public class ItemDialog extends Dialog<Item> {
         yearField.setPromptText("Ex: 2020");
         marketPriceField.setPromptText("0,00");
 
-        GridPane.setHgrow(nameField, Priority.ALWAYS);
         GridPane.setHgrow(categoryField, Priority.ALWAYS);
         GridPane.setHgrow(authorField, Priority.ALWAYS);
         GridPane.setHgrow(publisherField, Priority.ALWAYS);
 
-        // Botão auto-preencher via ISBN
+        // Nome + botão Google
+        Button googleBtn = new Button("🔍 Google");
+        googleBtn.setStyle("-fx-background-color: #4285f4; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        googleBtn.setOnAction(e -> openGoogleSearch());
+        HBox nameBox = new HBox(8, nameField, googleBtn);
+        HBox.setHgrow(nameField, Priority.ALWAYS);
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+
+        // ISBN + Auto-preencher + Baixar capa
         Button autoFillBtn = new Button("🔍 Auto-preencher");
         autoFillBtn.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
         autoFillBtn.setOnAction(e -> doIsbnLookup(autoFillBtn));
-        HBox isbnBox = new HBox(8, isbnField, autoFillBtn);
+        Button coverBtn = new Button("📷 Baixar capa");
+        coverBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        coverBtn.setOnAction(e -> doDownloadCover(coverBtn));
+        HBox isbnBox = new HBox(8, isbnField, autoFillBtn, coverBtn);
         HBox.setHgrow(isbnField, Priority.ALWAYS);
         isbnBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -139,7 +149,7 @@ public class ItemDialog extends Dialog<Item> {
         imageBox.setAlignment(Pos.CENTER_LEFT);
 
         int row = 0;
-        grid.add(label("Nome *"),          0, row); grid.add(nameField,       1, row++);
+        grid.add(label("Nome *"),          0, row); grid.add(nameBox,         1, row++);
         grid.add(label("ISBN"),            0, row); grid.add(isbnBox,         1, row++);
         grid.add(label("Autor / Ano"),     0, row); grid.add(authorYearBox,   1, row++);
         grid.add(label("Editora"),         0, row); grid.add(publisherField,  1, row++);
@@ -246,6 +256,59 @@ public class ItemDialog extends Dialog<Item> {
         try {
             Desktop.getDesktop().browse(new URI(url));
         } catch (Exception ignored) {}
+    }
+
+    private void openGoogleSearch() {
+        String query = nameField.getText().trim();
+        if (query.isBlank()) {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Preencha o Nome do item antes de buscar no Google.");
+            return;
+        }
+        try {
+            String encoded = java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8);
+            openBrowser("https://www.google.com.br/search?q=" + encoded);
+            lookupStatusLabel.setStyle("-fx-text-fill: #4285f4; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Busca Google aberta no navegador.");
+        } catch (Exception ignored) {}
+    }
+
+    private void doDownloadCover(Button btn) {
+        String isbn = isbnField.getText().trim();
+        if (isbn.isBlank()) {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Preencha o ISBN antes de baixar a capa.");
+            return;
+        }
+
+        btn.setDisable(true);
+        lookupStatusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+        lookupStatusLabel.setText("Baixando capa da Open Library...");
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return new BookLookupService().downloadCover(isbn);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            String path = task.getValue();
+            selectedImagePath = path;
+            loadImagePreview(path);
+            imagePathLabel.setText(Paths.get(path).getFileName().toString());
+            lookupStatusLabel.setStyle("-fx-text-fill: #8e44ad; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Capa baixada com sucesso!");
+            btn.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Erro: " + task.getException().getMessage());
+            btn.setDisable(false);
+        });
+
+        new Thread(task, "cover-download").start();
     }
 
     private void openAmazonSearch() {
