@@ -13,7 +13,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -220,12 +222,25 @@ public class ItemDialog extends Dialog<Item> {
         });
 
         task.setOnFailed(e -> {
-            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
-            lookupStatusLabel.setText("Erro: " + task.getException().getMessage());
+            Throwable ex = task.getException();
+            if (ex instanceof PriceLookupService.PriceApiAuthException authEx) {
+                lookupStatusLabel.setStyle("-fx-text-fill: #e67e22; -fx-font-size: 11px;");
+                lookupStatusLabel.setText("Abrindo busca no navegador...");
+                openBrowser(authEx.browserUrl);
+            } else {
+                lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+                lookupStatusLabel.setText("Erro: " + ex.getMessage());
+            }
             btn.setDisable(false);
         });
 
         new Thread(task, "price-lookup").start();
+    }
+
+    private void openBrowser(String url) {
+        try {
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (Exception ignored) {}
     }
 
     private void selectImage() {
