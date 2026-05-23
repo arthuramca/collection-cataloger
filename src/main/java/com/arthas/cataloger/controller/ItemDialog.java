@@ -112,11 +112,16 @@ public class ItemDialog extends Dialog<Item> {
         HBox.setHgrow(authorField, Priority.ALWAYS);
         yearField.setMaxWidth(80);
 
-        // Botão buscar preço Mercado Livre
-        Button priceBtn = new Button("💰 Buscar preço (ML)");
+        // Botões de preço: Mercado Livre + Amazon
+        Button priceBtn = new Button("💰 Mercado Livre");
         priceBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
         priceBtn.setOnAction(e -> doPriceLookup(priceBtn));
-        HBox priceBox = new HBox(8, marketPriceField, priceBtn);
+
+        Button amazonBtn = new Button("🛒 Amazon");
+        amazonBtn.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        amazonBtn.setOnAction(e -> openAmazonSearch());
+
+        HBox priceBox = new HBox(8, marketPriceField, priceBtn, amazonBtn);
         HBox.setHgrow(marketPriceField, Priority.ALWAYS);
         priceBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -240,6 +245,21 @@ public class ItemDialog extends Dialog<Item> {
     private void openBrowser(String url) {
         try {
             Desktop.getDesktop().browse(new URI(url));
+        } catch (Exception ignored) {}
+    }
+
+    private void openAmazonSearch() {
+        String query = nameField.getText().trim();
+        if (query.isBlank()) {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Preencha o Nome do item antes de buscar na Amazon.");
+            return;
+        }
+        try {
+            String encoded = java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8);
+            openBrowser("https://www.amazon.com.br/s?k=" + encoded);
+            lookupStatusLabel.setStyle("-fx-text-fill: #e67e22; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Busca Amazon aberta no navegador.");
         } catch (Exception ignored) {}
     }
 
