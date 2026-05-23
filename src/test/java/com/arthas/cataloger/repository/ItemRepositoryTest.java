@@ -29,7 +29,8 @@ class ItemRepositoryTest {
                         condition        TEXT    DEFAULT '',
                         acquisition_date TEXT,
                         value            REAL    DEFAULT 0.0,
-                        notes            TEXT    DEFAULT ''
+                        notes            TEXT    DEFAULT '',
+                        image_path       TEXT    DEFAULT ''
                     )
                     """);
         }
