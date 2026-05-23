@@ -62,7 +62,7 @@ public class ItemRepository {
         List<Item> items = new ArrayList<>();
         String sql = """
                 SELECT * FROM items
-                WHERE name LIKE ? OR category LIKE ? OR description LIKE ?
+                WHERE name LIKE ? OR category LIKE ? OR description LIKE ? OR isbn LIKE ? OR author LIKE ?
                 ORDER BY name COLLATE NOCASE
                 """;
         String pattern = "%" + query + "%";
@@ -70,6 +70,8 @@ public class ItemRepository {
             stmt.setString(1, pattern);
             stmt.setString(2, pattern);
             stmt.setString(3, pattern);
+            stmt.setString(4, pattern);
+            stmt.setString(5, pattern);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     items.add(mapRow(rs));
@@ -85,8 +87,9 @@ public class ItemRepository {
 
     private Item insert(Item item) throws SQLException {
         String sql = """
-                INSERT INTO items (name, category, description, condition, acquisition_date, value, notes, image_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO items (name, category, description, condition, acquisition_date, value, notes,
+                                   image_path, isbn, author, publisher, publish_year, market_price, market_price_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bindParams(stmt, item);
@@ -104,12 +107,14 @@ public class ItemRepository {
         String sql = """
                 UPDATE items
                 SET name = ?, category = ?, description = ?, condition = ?,
-                    acquisition_date = ?, value = ?, notes = ?, image_path = ?
+                    acquisition_date = ?, value = ?, notes = ?, image_path = ?,
+                    isbn = ?, author = ?, publisher = ?, publish_year = ?,
+                    market_price = ?, market_price_date = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             bindParams(stmt, item);
-            stmt.setInt(9, item.getId());
+            stmt.setInt(15, item.getId());
             stmt.executeUpdate();
         }
         return item;
@@ -124,14 +129,20 @@ public class ItemRepository {
     }
 
     private void bindParams(PreparedStatement stmt, Item item) throws SQLException {
-        stmt.setString(1, nullSafe(item.getName()));
-        stmt.setString(2, nullSafe(item.getCategory()));
-        stmt.setString(3, nullSafe(item.getDescription()));
-        stmt.setString(4, nullSafe(item.getCondition()));
-        stmt.setString(5, item.getAcquisitionDate() != null ? item.getAcquisitionDate().toString() : null);
-        stmt.setDouble(6, item.getValue());
-        stmt.setString(7, nullSafe(item.getNotes()));
-        stmt.setString(8, nullSafe(item.getImagePath()));
+        stmt.setString(1,  nullSafe(item.getName()));
+        stmt.setString(2,  nullSafe(item.getCategory()));
+        stmt.setString(3,  nullSafe(item.getDescription()));
+        stmt.setString(4,  nullSafe(item.getCondition()));
+        stmt.setString(5,  item.getAcquisitionDate() != null ? item.getAcquisitionDate().toString() : null);
+        stmt.setDouble(6,  item.getValue());
+        stmt.setString(7,  nullSafe(item.getNotes()));
+        stmt.setString(8,  nullSafe(item.getImagePath()));
+        stmt.setString(9,  nullSafe(item.getIsbn()));
+        stmt.setString(10, nullSafe(item.getAuthor()));
+        stmt.setString(11, nullSafe(item.getPublisher()));
+        stmt.setString(12, nullSafe(item.getPublishYear()));
+        stmt.setDouble(13, item.getMarketPrice());
+        stmt.setString(14, nullSafe(item.getMarketPriceDate()));
     }
 
     private Item mapRow(ResultSet rs) throws SQLException {
@@ -148,6 +159,12 @@ public class ItemRepository {
         item.setValue(rs.getDouble("value"));
         item.setNotes(rs.getString("notes"));
         item.setImagePath(rs.getString("image_path"));
+        item.setIsbn(rs.getString("isbn"));
+        item.setAuthor(rs.getString("author"));
+        item.setPublisher(rs.getString("publisher"));
+        item.setPublishYear(rs.getString("publish_year"));
+        item.setMarketPrice(rs.getDouble("market_price"));
+        item.setMarketPriceDate(rs.getString("market_price_date"));
         return item;
     }
 

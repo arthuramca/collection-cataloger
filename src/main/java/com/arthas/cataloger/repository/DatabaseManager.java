@@ -32,10 +32,24 @@ public class DatabaseManager {
     }
 
     private static void runMigrations(Connection conn) throws SQLException {
-        // Migration v2: adiciona coluna image_path — ignorado se já existir
+        // Migration v2: image_path
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("ALTER TABLE items ADD COLUMN image_path TEXT DEFAULT ''");
         } catch (SQLException ignored) {}
+        // Migration v3: campos de livro e preço de mercado
+        String[] v3Columns = {
+            "ALTER TABLE items ADD COLUMN isbn             TEXT DEFAULT ''",
+            "ALTER TABLE items ADD COLUMN author           TEXT DEFAULT ''",
+            "ALTER TABLE items ADD COLUMN publisher        TEXT DEFAULT ''",
+            "ALTER TABLE items ADD COLUMN publish_year     TEXT DEFAULT ''",
+            "ALTER TABLE items ADD COLUMN market_price     REAL DEFAULT 0.0",
+            "ALTER TABLE items ADD COLUMN market_price_date TEXT DEFAULT ''"
+        };
+        for (String ddl : v3Columns) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(ddl);
+            } catch (SQLException ignored) {}
+        }
     }
 
     private static void initializeSchema(Connection conn) throws SQLException {

@@ -13,6 +13,12 @@ public class Item {
     private double value;
     private String notes;
     private String imagePath;
+    private String isbn;
+    private String author;
+    private String publisher;
+    private String publishYear;
+    private double marketPrice;
+    private String marketPriceDate;
 
     public Item() {}
 
@@ -53,6 +59,24 @@ public class Item {
 
     public String getImagePath() { return imagePath; }
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+    public String getIsbn() { return isbn; }
+    public void setIsbn(String isbn) { this.isbn = isbn; }
+
+    public String getAuthor() { return author; }
+    public void setAuthor(String author) { this.author = author; }
+
+    public String getPublisher() { return publisher; }
+    public void setPublisher(String publisher) { this.publisher = publisher; }
+
+    public String getPublishYear() { return publishYear; }
+    public void setPublishYear(String publishYear) { this.publishYear = publishYear; }
+
+    public double getMarketPrice() { return marketPrice; }
+    public void setMarketPrice(double marketPrice) { this.marketPrice = marketPrice; }
+
+    public String getMarketPriceDate() { return marketPriceDate; }
+    public void setMarketPriceDate(String marketPriceDate) { this.marketPriceDate = marketPriceDate; }
 
     @Override
     public String toString() {

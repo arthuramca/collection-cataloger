@@ -13,7 +13,9 @@ public class SpreadsheetService {
 
     private static final String[] HEADERS = {
         "ID", "Nome", "Categoria", "Descrição", "Condição",
-        "Data de Aquisição", "Valor (R$)", "Observações", "Foto (caminho)"
+        "Data de Aquisição", "Valor (R$)", "Observações", "Foto (caminho)",
+        "ISBN", "Autor", "Editora", "Ano de Publicação",
+        "Preço Mercado Livre (R$)", "Data Consulta Preço"
     };
 
     public void exportToXlsx(List<Item> items, File file) throws IOException {
@@ -40,7 +42,6 @@ public class SpreadsheetService {
         List<Item> items = new ArrayList<>();
         try (Workbook workbook = WorkbookFactory.create(file)) {
             Sheet sheet = workbook.getSheetAt(0);
-            // linha 0 é o cabeçalho, começa a leitura da linha 1
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
@@ -81,6 +82,12 @@ public class SpreadsheetService {
         row.createCell(6).setCellValue(item.getValue());
         row.createCell(7).setCellValue(nullSafe(item.getNotes()));
         row.createCell(8).setCellValue(nullSafe(item.getImagePath()));
+        row.createCell(9).setCellValue(nullSafe(item.getIsbn()));
+        row.createCell(10).setCellValue(nullSafe(item.getAuthor()));
+        row.createCell(11).setCellValue(nullSafe(item.getPublisher()));
+        row.createCell(12).setCellValue(nullSafe(item.getPublishYear()));
+        row.createCell(13).setCellValue(item.getMarketPrice());
+        row.createCell(14).setCellValue(nullSafe(item.getMarketPriceDate()));
     }
 
     private Item parseRow(Row row) {
@@ -95,9 +102,7 @@ public class SpreadsheetService {
 
         String dateStr = getCellString(row, 5);
         if (!dateStr.isBlank()) {
-            try {
-                item.setAcquisitionDate(LocalDate.parse(dateStr));
-            } catch (Exception ignored) {}
+            try { item.setAcquisitionDate(LocalDate.parse(dateStr)); } catch (Exception ignored) {}
         }
 
         Cell valueCell = row.getCell(6);
@@ -107,6 +112,17 @@ public class SpreadsheetService {
 
         item.setNotes(getCellString(row, 7));
         item.setImagePath(getCellString(row, 8));
+        item.setIsbn(getCellString(row, 9));
+        item.setAuthor(getCellString(row, 10));
+        item.setPublisher(getCellString(row, 11));
+        item.setPublishYear(getCellString(row, 12));
+
+        Cell marketPriceCell = row.getCell(13);
+        if (marketPriceCell != null && marketPriceCell.getCellType() == CellType.NUMERIC) {
+            item.setMarketPrice(marketPriceCell.getNumericCellValue());
+        }
+
+        item.setMarketPriceDate(getCellString(row, 14));
         return item;
     }
 

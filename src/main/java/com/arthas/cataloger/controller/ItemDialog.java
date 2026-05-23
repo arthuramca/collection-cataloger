@@ -1,31 +1,43 @@
 package com.arthas.cataloger.controller;
 
 import com.arthas.cataloger.model.Item;
+import com.arthas.cataloger.service.BookLookupService;
+import com.arthas.cataloger.service.PriceLookupService;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 public class ItemDialog extends Dialog<Item> {
 
-    private final TextField        nameField       = new TextField();
-    private final TextField        categoryField   = new TextField();
-    private final TextArea         descriptionArea = new TextArea();
-    private final ComboBox<String> conditionBox    = new ComboBox<>();
-    private final DatePicker       datePicker      = new DatePicker();
-    private final TextField        valueField      = new TextField("0,00");
-    private final TextArea         notesArea       = new TextArea();
-    private final ImageView        imagePreview    = new ImageView();
-    private final Label            imagePathLabel  = new Label("Nenhuma foto selecionada");
+    private final TextField        nameField        = new TextField();
+    private final TextField        categoryField    = new TextField();
+    private final TextArea         descriptionArea  = new TextArea();
+    private final ComboBox<String> conditionBox     = new ComboBox<>();
+    private final DatePicker       datePicker       = new DatePicker();
+    private final TextField        valueField       = new TextField("0,00");
+    private final TextArea         notesArea        = new TextArea();
+    private final ImageView        imagePreview     = new ImageView();
+    private final Label            imagePathLabel   = new Label("Nenhuma foto selecionada");
     private String                 selectedImagePath = "";
+
+    // Campos de livro
+    private final TextField isbnField        = new TextField();
+    private final TextField authorField      = new TextField();
+    private final TextField publisherField   = new TextField();
+    private final TextField yearField        = new TextField();
+    private final TextField marketPriceField = new TextField("0,00");
+    private final Label     lookupStatusLabel = new Label();
 
     public ItemDialog(Item item) {
         boolean isNew = item == null;
@@ -47,9 +59,11 @@ public class ItemDialog extends Dialog<Item> {
         imagePreview.setPreserveRatio(true);
         imagePreview.setStyle("-fx-border-color: #bdc3c7; -fx-border-width: 1;");
 
+        lookupStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d;");
+
         GridPane grid = buildGrid();
         getDialogPane().setContent(grid);
-        getDialogPane().setPrefWidth(500);
+        getDialogPane().setPrefWidth(560);
 
         if (!isNew) {
             populateFields(item);
@@ -72,9 +86,39 @@ public class ItemDialog extends Dialog<Item> {
 
         nameField.setPromptText("Nome do item (obrigatório)");
         categoryField.setPromptText("Ex: Livros, Funko, Quadrinhos...");
+        isbnField.setPromptText("Ex: 9788532511010");
+        authorField.setPromptText("Nome do autor");
+        publisherField.setPromptText("Nome da editora");
+        yearField.setPromptText("Ex: 2020");
+        marketPriceField.setPromptText("0,00");
+
         GridPane.setHgrow(nameField, Priority.ALWAYS);
         GridPane.setHgrow(categoryField, Priority.ALWAYS);
+        GridPane.setHgrow(authorField, Priority.ALWAYS);
+        GridPane.setHgrow(publisherField, Priority.ALWAYS);
 
+        // Botão auto-preencher via ISBN
+        Button autoFillBtn = new Button("🔍 Auto-preencher");
+        autoFillBtn.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        autoFillBtn.setOnAction(e -> doIsbnLookup(autoFillBtn));
+        HBox isbnBox = new HBox(8, isbnField, autoFillBtn);
+        HBox.setHgrow(isbnField, Priority.ALWAYS);
+        isbnBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Autor + Ano na mesma linha
+        HBox authorYearBox = new HBox(10, authorField, new Label("Ano:"), yearField);
+        HBox.setHgrow(authorField, Priority.ALWAYS);
+        yearField.setMaxWidth(80);
+
+        // Botão buscar preço Mercado Livre
+        Button priceBtn = new Button("💰 Buscar preço (ML)");
+        priceBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        priceBtn.setOnAction(e -> doPriceLookup(priceBtn));
+        HBox priceBox = new HBox(8, marketPriceField, priceBtn);
+        HBox.setHgrow(marketPriceField, Priority.ALWAYS);
+        priceBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Botões de foto
         Button selectImageBtn = new Button("Selecionar foto...");
         selectImageBtn.setOnAction(e -> selectImage());
         Button clearImageBtn = new Button("Remover");
@@ -84,22 +128,104 @@ public class ItemDialog extends Dialog<Item> {
         imagePathLabel.setMaxWidth(280);
         imagePathLabel.setWrapText(false);
         imagePathLabel.setEllipsisString("...");
+        HBox imageBox = new HBox(10, imagePreview, new VBox(4, imageButtons, imagePathLabel));
+        imageBox.setAlignment(Pos.CENTER_LEFT);
 
         int row = 0;
-        grid.add(label("Nome *"),            0, row); grid.add(nameField,       1, row++);
-        grid.add(label("Categoria"),         0, row); grid.add(categoryField,   1, row++);
-        grid.add(label("Descrição"),         0, row); grid.add(descriptionArea, 1, row++);
-        grid.add(label("Condição"),          0, row); grid.add(conditionBox,    1, row++);
-        grid.add(label("Aquisição"),         0, row); grid.add(datePicker,      1, row++);
-        grid.add(label("Valor (R$)"),        0, row); grid.add(valueField,      1, row++);
-        grid.add(label("Observações"),       0, row); grid.add(notesArea,       1, row++);
-        grid.add(label("Foto"),              0, row);
-        // Foto: preview + botões lado a lado
-        HBox imageBox = new HBox(10, imagePreview, new javafx.scene.layout.VBox(4, imageButtons, imagePathLabel));
-        imageBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        grid.add(imageBox, 1, row);
+        grid.add(label("Nome *"),          0, row); grid.add(nameField,       1, row++);
+        grid.add(label("ISBN"),            0, row); grid.add(isbnBox,         1, row++);
+        grid.add(label("Autor / Ano"),     0, row); grid.add(authorYearBox,   1, row++);
+        grid.add(label("Editora"),         0, row); grid.add(publisherField,  1, row++);
+        grid.add(label("Categoria"),       0, row); grid.add(categoryField,   1, row++);
+        grid.add(label("Descrição"),       0, row); grid.add(descriptionArea, 1, row++);
+        grid.add(label("Condição"),        0, row); grid.add(conditionBox,    1, row++);
+        grid.add(label("Aquisição"),       0, row); grid.add(datePicker,      1, row++);
+        grid.add(label("Valor (R$)"),      0, row); grid.add(valueField,      1, row++);
+        grid.add(label("Preço ML (R$)"),   0, row); grid.add(priceBox,        1, row++);
+        grid.add(new Label(),              0, row); grid.add(lookupStatusLabel, 1, row++);
+        grid.add(label("Observações"),     0, row); grid.add(notesArea,       1, row++);
+        grid.add(label("Foto"),            0, row); grid.add(imageBox,        1, row);
 
         return grid;
+    }
+
+    private void doIsbnLookup(Button btn) {
+        String isbn = isbnField.getText().trim();
+        if (isbn.isBlank()) {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Digite um ISBN antes de buscar.");
+            return;
+        }
+
+        btn.setDisable(true);
+        lookupStatusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+        lookupStatusLabel.setText("Buscando dados na Open Library...");
+
+        Task<BookLookupService.BookInfo> task = new Task<>() {
+            @Override
+            protected BookLookupService.BookInfo call() throws Exception {
+                return new BookLookupService().lookup(isbn);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            BookLookupService.BookInfo info = task.getValue();
+            if (!info.title.isBlank() && nameField.getText().isBlank()) {
+                nameField.setText(info.title);
+            }
+            if (!info.author.isBlank())    authorField.setText(info.author);
+            if (!info.publisher.isBlank()) publisherField.setText(info.publisher);
+            if (!info.publishYear.isBlank()) yearField.setText(info.publishYear);
+            lookupStatusLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Dados preenchidos com sucesso!");
+            btn.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Erro: " + task.getException().getMessage());
+            btn.setDisable(false);
+        });
+
+        new Thread(task, "isbn-lookup").start();
+    }
+
+    private void doPriceLookup(Button btn) {
+        String query = nameField.getText().trim();
+        if (query.isBlank()) {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Preencha o Nome do item antes de buscar o preço.");
+            return;
+        }
+
+        btn.setDisable(true);
+        lookupStatusLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+        lookupStatusLabel.setText("Consultando preços no Mercado Livre...");
+
+        Task<PriceLookupService.PriceResult> task = new Task<>() {
+            @Override
+            protected PriceLookupService.PriceResult call() throws Exception {
+                return new PriceLookupService().fetchPrice(query);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            PriceLookupService.PriceResult result = task.getValue();
+            marketPriceField.setText(String.format("%.2f", result.average).replace('.', ','));
+            lookupStatusLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 11px;");
+            lookupStatusLabel.setText(String.format(
+                "Média: R$ %.2f | Menor: R$ %.2f | %d anúncios",
+                result.average, result.lowest, result.sampleSize));
+            btn.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            lookupStatusLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+            lookupStatusLabel.setText("Erro: " + task.getException().getMessage());
+            btn.setDisable(false);
+        });
+
+        new Thread(task, "price-lookup").start();
     }
 
     private void selectImage() {
@@ -143,6 +269,13 @@ public class ItemDialog extends Dialog<Item> {
             loadImagePreview(selectedImagePath);
             imagePathLabel.setText(Paths.get(selectedImagePath).getFileName().toString());
         }
+        isbnField.setText(nullSafe(item.getIsbn()));
+        authorField.setText(nullSafe(item.getAuthor()));
+        publisherField.setText(nullSafe(item.getPublisher()));
+        yearField.setText(nullSafe(item.getPublishYear()));
+        if (item.getMarketPrice() > 0) {
+            marketPriceField.setText(String.format("%.2f", item.getMarketPrice()).replace('.', ','));
+        }
     }
 
     private Item buildItem(Item existing) {
@@ -152,13 +285,22 @@ public class ItemDialog extends Dialog<Item> {
         result.setDescription(descriptionArea.getText().trim());
         result.setCondition(conditionBox.getValue());
         result.setAcquisitionDate(datePicker.getValue());
-        result.setValue(parseValue(valueField.getText()));
+        result.setValue(parseDouble(valueField.getText()));
         result.setNotes(notesArea.getText().trim());
         result.setImagePath(selectedImagePath);
+        result.setIsbn(isbnField.getText().trim());
+        result.setAuthor(authorField.getText().trim());
+        result.setPublisher(publisherField.getText().trim());
+        result.setPublishYear(yearField.getText().trim());
+        double mp = parseDouble(marketPriceField.getText());
+        result.setMarketPrice(mp);
+        if (mp > 0) {
+            result.setMarketPriceDate(LocalDate.now().toString());
+        }
         return result;
     }
 
-    private double parseValue(String text) {
+    private double parseDouble(String text) {
         try {
             return Double.parseDouble(text.replace(",", ".").replaceAll("[^\\d.]", ""));
         } catch (NumberFormatException e) {

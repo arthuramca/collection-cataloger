@@ -22,15 +22,21 @@ class ItemRepositoryTest {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("""
                     CREATE TABLE items (
-                        id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name             TEXT    NOT NULL,
-                        category         TEXT    DEFAULT '',
-                        description      TEXT    DEFAULT '',
-                        condition        TEXT    DEFAULT '',
-                        acquisition_date TEXT,
-                        value            REAL    DEFAULT 0.0,
-                        notes            TEXT    DEFAULT '',
-                        image_path       TEXT    DEFAULT ''
+                        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name              TEXT    NOT NULL,
+                        category          TEXT    DEFAULT '',
+                        description       TEXT    DEFAULT '',
+                        condition         TEXT    DEFAULT '',
+                        acquisition_date  TEXT,
+                        value             REAL    DEFAULT 0.0,
+                        notes             TEXT    DEFAULT '',
+                        image_path        TEXT    DEFAULT '',
+                        isbn              TEXT    DEFAULT '',
+                        author            TEXT    DEFAULT '',
+                        publisher         TEXT    DEFAULT '',
+                        publish_year      TEXT    DEFAULT '',
+                        market_price      REAL    DEFAULT 0.0,
+                        market_price_date TEXT    DEFAULT ''
                     )
                     """);
         }
