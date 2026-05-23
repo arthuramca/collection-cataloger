@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.arthas.cataloger.controller.MainController"
+            styleClass="main-pane">
+
+    <top>
+        <VBox>
+            <!-- Barra de título e busca -->
+            <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Label text="Catalogador de Coleções" styleClass="app-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField"
+                           promptText="Buscar por nome, categoria, descrição..."
+                           prefWidth="280"
+                           onAction="#onSearch"/>
+                <Button text="Buscar"  onAction="#onSearch"      styleClass="btn-secondary"/>
+                <Button text="Limpar"  onAction="#onClearSearch" styleClass="btn-secondary"/>
+            </HBox>
+
+            <!-- Barra de ações -->
+            <HBox styleClass="action-bar" spacing="8" alignment="CENTER_LEFT">
+                <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
+                <Button text="+ Novo Item"    onAction="#onNewItem"    styleClass="btn-primary"/>
+                <Button text="Editar"         onAction="#onEditItem"   styleClass="btn-secondary"/>
+                <Button text="Excluir"        onAction="#onDeleteItem" styleClass="btn-danger"/>
+                <Separator orientation="VERTICAL"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="⬆ Exportar .xlsx" onAction="#onExport" styleClass="btn-success"/>
+                <Button text="⬇ Importar .xlsx" onAction="#onImport" styleClass="btn-success"/>
+            </HBox>
+
+            <Separator/>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="itemTable" tableMenuButtonVisible="true">
+            <columns>
+                <TableColumn fx:id="colId"       text="ID"         prefWidth="55"  minWidth="40"/>
+                <TableColumn fx:id="colName"      text="Nome"       prefWidth="210" minWidth="100"/>
+                <TableColumn fx:id="colCategory"  text="Categoria"  prefWidth="130" minWidth="80"/>
+                <TableColumn fx:id="colCondition" text="Condição"   prefWidth="100" minWidth="70"/>
+                <TableColumn fx:id="colDate"      text="Aquisição"  prefWidth="110" minWidth="90"/>
+                <TableColumn fx:id="colValue"     text="Valor"      prefWidth="110" minWidth="70"/>
+                <TableColumn fx:id="colNotes"     text="Observações" prefWidth="220" minWidth="100"/>
+            </columns>
+            <placeholder>
+                <Label text="Nenhum item cadastrado. Clique em '+ Novo Item' para começar ou importe uma planilha .xlsx."/>
+            </placeholder>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="10">
+            <padding><Insets top="5" right="16" bottom="5" left="16"/></padding>
+            <Label fx:id="statusLabel" text="Pronto"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="countLabel" text="0 itens" styleClass="count-label"/>
+        </HBox>
+    </bottom>
+</BorderPane>

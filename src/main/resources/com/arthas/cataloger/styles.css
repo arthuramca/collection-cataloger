@@ -1,0 +1,131 @@
+/* ============================================================
+   Catalogador de Coleções — Folha de estilos principal
+   ============================================================ */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* --- Layout principal --- */
+.main-pane {
+    -fx-background-color: #f4f6f8;
+}
+
+/* --- Barra de topo --- */
+.toolbar {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 2);
+}
+
+.action-bar {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* --- Botões --- */
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 4;
+    -fx-padding: 5 12 5 12;
+}
+
+.btn-primary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.btn-primary:hover  { -fx-background-color: #2980b9; }
+.btn-primary:pressed{ -fx-background-color: #2471a3; }
+
+.btn-secondary {
+    -fx-background-color: #7f8c8d;
+    -fx-text-fill: white;
+}
+.btn-secondary:hover  { -fx-background-color: #6c7a7d; }
+.btn-secondary:pressed{ -fx-background-color: #5d6d7e; }
+
+.btn-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+.btn-danger:hover  { -fx-background-color: #c0392b; }
+.btn-danger:pressed{ -fx-background-color: #a93226; }
+
+.btn-success {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+}
+.btn-success:hover  { -fx-background-color: #229954; }
+.btn-success:pressed{ -fx-background-color: #1e8449; }
+
+/* --- Tabela --- */
+.table-view {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #2c3e50;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 36;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #f0f0f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fafbfc;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #eaf4fb;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #3498db;
+}
+
+.table-row-cell:selected .text {
+    -fx-fill: white;
+}
+
+/* --- Barra de status --- */
+.status-bar {
+    -fx-background-color: #ecf0f1;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1 0 0 0;
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+}
+
+.count-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* --- Campo de busca --- */
+.text-field:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 0 0 2 0;
+}

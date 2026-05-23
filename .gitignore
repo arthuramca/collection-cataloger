@@ -1,0 +1,55 @@
+# ============================================================
+# .gitignore — Java / Maven / JavaFX Desktop App
+# ============================================================
+
+# Diretório de build Maven
+target/
+
+# Arquivos gerados pelo Maven
+*.class
+*.jar
+*.war
+*.ear
+
+# Banco de dados SQLite local (gerado automaticamente na primeira execução)
+*.db
+*.db-shm
+*.db-wal
+
+# IDE — IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE — Eclipse / STS
+.project
+.classpath
+.settings/
+bin/
+
+# IDE — VS Code
+.vscode/
+*.code-workspace
+
+# IDE — NetBeans
+nbproject/
+build/
+dist/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Planilhas temporárias geradas durante testes
+test-catalog-*.xlsx
+
+# Logs
+*.log
+logs/
+
+# Variáveis de ambiente (nunca commitar)
+.env
+.env.*
