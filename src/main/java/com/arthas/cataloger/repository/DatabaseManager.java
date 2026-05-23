@@ -2,10 +2,6 @@ package com.arthas.cataloger.repository;
 
 import java.io.IOException;
 import java.nio.file.Files;
-<parameter name="content">package com.arthas.cataloger.repository;
-
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -26,7 +22,7 @@ public class DatabaseManager {
             try {
                 Files.createDirectories(Paths.get(DB_DIR));
             } catch (IOException e) {
-                throw new SQLException("Não foi possível criar o diretório do banco de dados: " + DB_DIR, e);
+                throw new SQLException("Nao foi possivel criar o diretorio do banco de dados: " + DB_DIR, e);
             }
             connection = DriverManager.getConnection(DB_URL);
             initializeSchema(connection);
